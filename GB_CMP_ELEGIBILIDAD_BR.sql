@@ -3,20 +3,20 @@
 * FORMULA NAME      : GB_CMP_ELEGIBILIDAD_BR                                  *
 * FORMULA TYPE      : Participation and Rate Eligibility                      *
 * DESCRIPTION       : Elegibilidad para Brasil. Incluye solo colaboradores    *
-* con nivel 5-MANAGER (Segundo Ejecutivo y superior).     *
+*                     con nivel 4 en adelante                                  
 * *
-*-----------------------------------------------------------------------------*
+*---------------------------------------------------------------------------*
 * CREATED BY        : IT-GLOBAL                                               *
 * CREATION DATE     : 07-Abril-2026                                           *
 * LAST UPDATE DATE  : 08-Abril-2026                                           *
 * *
-*******************************************************************************
-* Change History:                                                             *
-* Name              Date             Version          Comments                *
-*-----------------------------------------------------------------------------*
-* It Global         15-Abril-2026    1                Versión Inicial         *
-* *
-******************************************************************************/
+=============================================================================
+Change History:
+Author          | Date            | Ver | Comments                          *
+-----------------+-----------------+-----+-----------------------------------*
+IT Global       | 07-Abril-2026   |  1  | Version Inicial                   *
+IT Global       | 08-Abril-2026   |  2  | Actualizacion de logica           *
+=============================================================================*/
 
 INPUTS ARE CMP_IV_PLAN_ELIG_DATE (text)
 

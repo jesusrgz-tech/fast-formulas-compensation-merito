@@ -94,7 +94,7 @@ l_log = SET_LOG('Evaluacion: ' || L_EVAL_TXT)
 L_APLICA_BONO = GET_TABLE_VALUE('GB_CMP_CALIF_BONO_BR', 'Aplica_Bono', L_EVAL_TXT)
 l_log = SET_LOG('Aplica Bono: ' || L_APLICA_BONO)
 
-IF L_APLICA_BONO = 'N/A' OR L_APLICA_BONO <> 'S' THEN
+IF L_APLICA_BONO = ' ' OR L_APLICA_BONO <> 'S' THEN
 (
     l_log = SET_LOG('Calificacion ' || L_EVAL_TXT || ' no aplica bono, retorna 0')
     L_DEFAULT_VALUE = '0'
