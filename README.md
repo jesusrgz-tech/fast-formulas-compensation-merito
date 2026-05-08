@@ -19,7 +19,7 @@ fast-formulas-compensation-merito/
 ├── formulas/
 │   ├── GB_CMP_APERTURA_BR.sql
 │   ├── GB_CMP_BONO_MERITO_BR.sql
-│   └── ...
+│   └── ....
 │
 ├── docs/
 │   └── README.md
