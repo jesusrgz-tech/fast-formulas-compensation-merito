@@ -1,13 +1,24 @@
-/**********************************************************************
-FORMULA NAME: GB_CMP_BONO_MERITO_BR
-CREATED_BY : IT-GLOBAL
-CREATION_DATE : 07 de Abril del 2026
-LAST_UPDATE_DATE : 08 de Abril del 2026
-FORMULA TYPE : Compensation Default and Override
-DESCRIPTION : Calcula el bono por mérito para Brasil. Aplica solo para
-              nivel 5 con calificación Sobresaliente.
+/******************************************************************************
+* *
+* FORMULA NAME      : GB_CMP_BONO_MERITO_BR                                   
+* FORMULA TYPE      : Compensation Default and Override                       
+* DESCRIPTION       : Calcula el bono por mérito para Brasil. Aplica solo para
+              nivel 5 con calificación definida en UDT GB_CMP_CALIF_BONO_BR.
               Cálculo: 15 x Nuevo sueldo mensual / 2
-**********************************************************************/
+* *
+*-----------------------------------------------------------------------------*
+* CREATED BY        : IT-GLOBAL                                               *
+* CREATION DATE     : 07-Abril-2026                                           *
+* LAST UPDATE DATE  : 06-Mayo-2026                                           *
+* *
+=============================================================================
+* Change History:                                                             *
+* Author          | Date            | Ver | Comments                          *
+*-----------------+-----------------+-----+-----------------------------------*
+* IT Global       | 07-Abril-2026   |  1  | Version Inicial                   *
+* IT Global       | 06-Mayo-2026   |  2  | Actualizacion de logica           *
+=============================================================================
+******************************************************************************/
 
 INPUTS ARE CMP_IV_PLAN_START_DATE (text),
 CMP_IV_PLAN_END_DATE (text),
@@ -39,12 +50,13 @@ l_log = SET_LOG('Sueldo mensual: ' || TO_CHAR(L_SUELDO))
 IF L_NIVEL <> '5' THEN
 (
     l_log = SET_LOG('Nivel no aplica, retorna 0')
-    L_DEFAULT_VALUE = '0'
+    L_DEFAULT_VALUE = 0
     RETURN L_DEFAULT_VALUE
 )
 
-/***** EVALUACION DE CONTRIBUCION *****/
+/********************** EVALUACION DE CONTRIBUCION ***************************/
 L_EVAL_TXT = 'N/A'
+L_EVAL_MAPPED = 'N/A'
 L_IDX = 0
 
 CHANGE_CONTEXTS(EFFECTIVE_DATE = HR_EXTRACT_DATE, COMPENSATION_RECORD_TYPE = 'CMP_MERITO')
@@ -57,15 +69,16 @@ CHANGE_CONTEXTS(EFFECTIVE_DATE = HR_EXTRACT_DATE, COMPENSATION_RECORD_TYPE = 'CM
         L_EXT_VAL = CMP_EXTERNAL_WORKER_DATA_RGE_ASG_VALUE1[L_IDX]
         l_log = SET_LOG('VALUE1[' || TO_CHAR(L_IDX) || ']: ' || L_EXT_VAL)
 
-        IF L_EXT_VAL = 'Sobresaliente' OR
-           L_EXT_VAL = 'Supera' OR
-           L_EXT_VAL = 'Cumple con lo esperado' OR
-           L_EXT_VAL = 'Necesita mejora' OR
-           L_EXT_VAL = 'Por debajo de lo esperado' OR
-           L_EXT_VAL = 'Salida' THEN
+        IF L_EXT_VAL != 'N/A' THEN
         (
-            L_EVAL_TXT = L_EXT_VAL
-            L_IDX = 0
+            L_EVAL_MAPPED = GET_TABLE_VALUE('GB_CMP_CALIFICAC_MERITO', 'Calificacion_Texto', L_EXT_VAL)
+            IF L_EVAL_MAPPED != 'N/A' THEN
+            (
+                L_EVAL_TXT = L_EVAL_MAPPED
+                L_IDX = 0
+            )
+            ELSE
+                L_IDX = L_IDX - 1
         )
         ELSE
             L_IDX = L_IDX - 1
@@ -74,20 +87,24 @@ CHANGE_CONTEXTS(EFFECTIVE_DATE = HR_EXTRACT_DATE, COMPENSATION_RECORD_TYPE = 'CM
 
 l_log = SET_LOG('Evaluacion: ' || L_EVAL_TXT)
 
-/***** VALIDAR CALIFICACION *****/
-IF L_EVAL_TXT <> 'Sobresaliente' THEN
+/******************* VALIDAR CALIFICACION EN UDT *****/
+L_APLICA_BONO = GET_TABLE_VALUE('GB_CMP_CALIF_BONO_BR', 'Aplica_Bono', L_EVAL_TXT)
+l_log = SET_LOG('Aplica Bono: ' || L_APLICA_BONO)
+
+IF L_APLICA_BONO <> 'S' THEN
 (
-    l_log = SET_LOG('Calificacion no aplica, retorna 0')
-    L_DEFAULT_VALUE = '0'
+    l_log = SET_LOG('Calificacion no aplica bono, retorna 0')
+    L_DEFAULT_VALUE = 0
     RETURN L_DEFAULT_VALUE
 )
 
+/***** CALCULO BONO *****/
 /***** CALCULO BONO *****/
 L_BONO = 15 * L_SUELDO / 2
 
 l_log = SET_LOG('Bono calculado: ' || TO_CHAR(L_BONO))
 
-L_DEFAULT_VALUE = TO_CHAR(L_BONO)
+L_DEFAULT_VALUE = L_BONO
 
-l_log = SET_LOG('*** RESULTADO GB_CMP_BONO_MERITO_BR: ' || L_DEFAULT_VALUE || ' ***')
+l_log = SET_LOG('*** RESULTADO GB_CMP_BONO_MERITO_BR: ' || TO_CHAR(L_DEFAULT_VALUE) || ' ***')
 RETURN L_DEFAULT_VALUE
