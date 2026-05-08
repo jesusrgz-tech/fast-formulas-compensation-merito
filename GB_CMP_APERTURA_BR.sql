@@ -14,7 +14,8 @@
 * Change History:                                                             *
 * Name              Date             Version          Comments                *
 *-----------------------------------------------------------------------------*
-* It Global         05-Ene-2023      1                Versión Inicial         *
+* It Global         05-Ene-2023      1                Versión Inicial 
+* It Global         08-Mayo-2023     2                 Update                 *
 * *
 ******************************************************************************/
 
