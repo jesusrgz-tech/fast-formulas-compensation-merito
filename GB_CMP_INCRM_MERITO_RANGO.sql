@@ -189,7 +189,7 @@ ELSE
 l_log = SET_LOG('Clave UDT: ' || L_CLAVE)
 
 /*============================================================================
-  LECTURA UDT
+  Lectura User Definied Table
   Se obtiene el texto del rango directamente desde GB_CMP_RANGOS_MERITO
   usando la clave construida
 ============================================================================*/
