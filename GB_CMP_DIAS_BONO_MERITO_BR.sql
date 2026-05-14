@@ -47,16 +47,16 @@ CHANGE_CONTEXTS(EFFECTIVE_DATE = HR_EXTRACT_DATE)
 l_log = SET_LOG('Nivel: ' || L_NIVEL)
 l_log = SET_LOG('Legal Employer: ' || L_LEGAL_EMPLOYER)
 
-/***** VALIDAR NIVEL 5 O SUPERIOR *****/
+/* ============================================ VALIDAR NIVEL 4 O SUPERIOR ========================================= */
 L_NIVEL_NUM = TO_NUMBER(L_NIVEL)
-IF L_NIVEL_NUM != 5 THEN
+IF L_NIVEL_NUM < 4 THEN
 (
-    l_log = SET_LOG('Nivel insuficiente (requiere 5), retorna 0')
+    l_log = SET_LOG('Nivel insuficiente (requiere 4 o superior), retorna 0')
     L_DEFAULT_VALUE = '0'
     RETURN L_DEFAULT_VALUE
 )
 
-/* ========================================= EVALUACION =========================================*/
+/* =================================================== EVALUACION ======================================================*/
 L_EVAL_TXT = 'N/A'
 L_EVAL_MAPPED = 'N/A'
 L_IDX = 0
@@ -90,11 +90,11 @@ CHANGE_CONTEXTS(EFFECTIVE_DATE = HR_EXTRACT_DATE, COMPENSATION_RECORD_TYPE = 'CM
 
 l_log = SET_LOG('Evaluacion: ' || L_EVAL_TXT)
 
-/***** VALIDAR CALIFICACION EN UDT *****/
+/*========================================= VALIDAR CALIFICACION EN UDT ==========================================*/
 L_APLICA_BONO = GET_TABLE_VALUE('GB_CMP_CALIF_BONO_BR', 'Aplica_Bono', L_EVAL_TXT)
 l_log = SET_LOG('Aplica Bono: ' || L_APLICA_BONO)
 
-IF L_APLICA_BONO = ' ' OR L_APLICA_BONO <> 'S' THEN
+IF L_APLICA_BONO = 'N/A' OR L_APLICA_BONO <> 'S' THEN
 (
     l_log = SET_LOG('Calificacion ' || L_EVAL_TXT || ' no aplica bono, retorna 0')
     L_DEFAULT_VALUE = '0'

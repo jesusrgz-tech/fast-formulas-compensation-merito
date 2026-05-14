@@ -35,7 +35,8 @@ PL_END_DATE = CMP_IV_PLAN_END_DATE
 HR_EXTRACT_DATE = CMP_IV_PLAN_EXTRACTION_DATE
  
 /* Nueva lógica para periodo automático de promociones */
-PROMOTION_START_DATE = ADD_MONTHS(PL_END_DATE, -5)  /* 12 meses después del inicio del plan */
+/* PROMOTION_START_DATE = ADD_MONTHS(PL_START_DATE, 12) */ /* 12 meses después del inicio del periodo */
+PROMOTION_START_DATE = ADD_MONTHS(PL_END_DATE, -5)  /* Fix para restar 5 meses al fin del periodo */
 PROMOTION_END_DATE = HR_EXTRACT_DATE /* La fecha de extracción de datos será el fin del periodo */
  
 /* Ajustar el contexto con la fecha de extracción */
@@ -87,6 +88,7 @@ If ASSIGN_START_DATE >= PROMOTION_START_DATE and ASSIGN_START_DATE <= PROMOTION_
 IF LEVEL1 <> 'NA' AND 
 TO_NUMBER(MGR_LVL) > TO_NUMBER(LEVEL1) THEN
 (LEVEL_CHANGE = 'Y')
+
 /* Si hubo cambio de nivel, marcar promoción */
 if LEVEL_CHANGE = 'Y' THEN
 (

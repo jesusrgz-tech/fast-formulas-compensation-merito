@@ -3,13 +3,16 @@
 * FORMULA TYPE      : Compensation Default and Override                       *
 * DESCRIPTION       : Obtiene el porcentaje promedio de UDT desde             *
 *                     GB_INCREMENTO_MERITO_V2 para la clave BR                *
-*-----------------------------------------------------------------------------*
+*---------------------------
+--------------------------------------------------*
 * CREATED BY        : IT-GLOBAL                                               *
 * CREATION DATE     : 08-Mayo-2026                                            *
 *-----------------------------------------------------------------------------*
 ******************************************************************************/
 
 INPUTS ARE CMP_IV_PLAN_EXTRACTION_DATE (text)
+
+
 
 /*============================================================================
   FECHAS BASE

@@ -1,23 +1,22 @@
 /******************************************************************************
 * *
-* FORMULA NAME      : GB_CMP_BONO_MERITO_BR                                   
-* FORMULA TYPE      : Compensation Default and Override                       
-* DESCRIPTION       : Calcula el bono por mérito para Brasil. Aplica solo para
-              nivel 5 con calificación definida en UDT GB_CMP_CALIF_BONO_BR.
-              Cálculo: 15 x Nuevo sueldo mensual / 2
+* FORMULA NAME      : GB_CMP_BONO_MERITO_BR                                   *
+* FORMULA TYPE      : Compensation Default and Override                       *
+* DESCRIPTION       : Calcula el bono por mérito para Brasil. Aplica solo     *
+* para nivel 5 con calificación en GB_CMP_CALIF_BONO_BR.  *
+* Cálculo: 15 x Nuevo sueldo mensual / 2                  *
 * *
 *-----------------------------------------------------------------------------*
 * CREATED BY        : IT-GLOBAL                                               *
 * CREATION DATE     : 07-Abril-2026                                           *
-* LAST UPDATE DATE  : 06-Mayo-2026                                           *
+* LAST UPDATE DATE  : 16-Abril-2026                                           *
 * *
-=============================================================================
+*******************************************************************************
 * Change History:                                                             *
-* Author          | Date            | Ver | Comments                          *
-*-----------------+-----------------+-----+-----------------------------------*
-* IT Global       | 07-Abril-2026   |  1  | Version Inicial                   *
-* IT Global       | 06-Mayo-2026   |  2  | Actualizacion de logica           *
-=============================================================================
+* Name              Date             Version          Comments                *
+*-----------------------------------------------------------------------------*
+* It Global         15-Abril-2026    1                Versión Inicial         *
+* *
 ******************************************************************************/
 
 INPUTS ARE CMP_IV_PLAN_START_DATE (text),
@@ -98,8 +97,7 @@ IF L_APLICA_BONO <> 'S' THEN
     RETURN L_DEFAULT_VALUE
 )
 
-/***** CALCULO BONO *****/
-/***** CALCULO BONO *****/
+/************************ CALCULO BONO ***************************/
 L_BONO = 15 * L_SUELDO / 2
 
 l_log = SET_LOG('Bono calculado: ' || TO_CHAR(L_BONO))

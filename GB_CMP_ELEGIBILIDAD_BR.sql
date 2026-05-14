@@ -3,20 +3,20 @@
 * FORMULA NAME      : GB_CMP_ELEGIBILIDAD_BR                                  *
 * FORMULA TYPE      : Participation and Rate Eligibility                      *
 * DESCRIPTION       : Elegibilidad para Brasil. Incluye solo colaboradores    *
-*                     con nivel 4 en adelante                                  
+* con nivel 5-MANAGER (Segundo Ejecutivo y superior).     *
 * *
-*---------------------------------------------------------------------------*
+*-----------------------------------------------------------------------------*
 * CREATED BY        : IT-GLOBAL                                               *
 * CREATION DATE     : 07-Abril-2026                                           *
-* LAST UPDATE DATE  : 08-Mayo-2026                                           *
+* LAST UPDATE DATE  : 08-Abril-2026                                           *
 * *
-=============================================================================
-Change History:
-Author          | Date            | Ver | Comments                          *
------------------+-----------------+-----+-----------------------------------*
-IT Global       | 07-Abril-2026   |  1  | Version Inicial                   *
-IT Global       | 08-Abril-2026   |  2  | Actualizacion de logica           *
-=============================================================================*/
+*******************************************************************************
+* Change History:                                                             *
+* Name              Date             Version          Comments                *
+*-----------------------------------------------------------------------------*
+* It Global         15-Abril-2026    1                Versión Inicial         *
+* *
+******************************************************************************/
 
 INPUTS ARE CMP_IV_PLAN_ELIG_DATE (text)
 
@@ -38,7 +38,7 @@ CHANGE_CONTEXTS(EFFECTIVE_DATE = ELIG_DATE)
         MGR_LVL_NUM = TO_NUM(MGR_LVL)
 )
 
-IF MGR_LVL_NUM >= 5 THEN
+IF MGR_LVL_NUM >= 4 THEN
     ELIGIBLE = 'Y'
 
 RETURN ELIGIBLE

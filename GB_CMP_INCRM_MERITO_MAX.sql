@@ -30,6 +30,8 @@ DEFAULT_DATA_VALUE FOR CMP_EXTERNAL_WORKER_DATA_RGE_ASG_VALUE2 IS 'N/A'
 DEFAULT FOR PER_ASG_ATTRIBUTE1 IS 'PERMANENTE'
 DEFAULT FOR PER_ASG_ACTION_CODE IS 'N/A'
 DEFAULT FOR PER_ASG_EFFECTIVE_START_DATE IS '1900/01/01' (date)
+DEFAULT FOR PER_ASG_EFFECTIVE_END_DATE IS '4712/12/31' (date)
+DEFAULT FOR PER_ASG_JOB_MANAGER_LEVEL IS 'NA'
 DEFAULT FOR PER_ASG_GRADE_ID IS 123
 DEFAULT FOR PER_ASG_PERSON_ID IS 0
 DEFAULT FOR CMP_ASSIGNMENT_SALARY_AMOUNT IS 0
@@ -93,12 +95,15 @@ l_log = SET_LOG('Evaluacion: ' || L_EVAL_TXT)
 ============================================================================*/
 CHANGE_CONTEXTS(EFFECTIVE_DATE = HR_EXTRACT_DATE)
 (
-    L_TIPO_CONTRATO = PER_ASG_ATTRIBUTE1
-    L_ACTION        = PER_ASG_ACTION_CODE
-    L_HIRE_DATE     = PER_ASG_EFFECTIVE_START_DATE
-    L_GRADE         = PER_ASG_GRADE_ID
-    L_SUELDO        = CMP_ASSIGNMENT_SALARY_AMOUNT
-    L_PER_ID        = PER_ASG_PERSON_ID
+    L_TIPO_CONTRATO    = PER_ASG_ATTRIBUTE1
+    L_ACTION           = PER_ASG_ACTION_CODE
+    L_HIRE_DATE        = PER_ASG_EFFECTIVE_START_DATE
+    L_GRADE            = PER_ASG_GRADE_ID
+    L_SUELDO           = CMP_ASSIGNMENT_SALARY_AMOUNT
+    L_PER_ID           = PER_ASG_PERSON_ID
+    MGR_LVL            = PER_ASG_JOB_MANAGER_LEVEL
+    ASSIGN_START_DATE  = PER_ASG_EFFECTIVE_START_DATE
+    ASSIGN_END_DATE    = PER_ASG_EFFECTIVE_END_DATE
 )
 
 l_log = SET_LOG('Tipo contrato: ' || L_TIPO_CONTRATO)
@@ -106,6 +111,7 @@ l_log = SET_LOG('Action code: '   || L_ACTION)
 l_log = SET_LOG('Hire Date: '     || TO_CHAR(L_HIRE_DATE, 'YYYY/MM/DD'))
 l_log = SET_LOG('Grade ID: '      || TO_CHAR(L_GRADE))
 l_log = SET_LOG('Sueldo: '        || TO_CHAR(L_SUELDO))
+l_log = SET_LOG('Manager Level Actual : ' || MGR_LVL)
 
 /*============================================================================
   CALCULO APERTURA
@@ -142,18 +148,84 @@ ELSE
 )
 l_log = SET_LOG('Apertura calculada: ' || TO_CHAR(L_APERTURA))
 
+
 /*============================================================================
-  VENTANA NEW HIRE
-  Se calcula la fecha limite de 5 meses atras respecto a la fecha fin del plan
+  DETECCION DE PROMOCION POR RETROFIT
+  Se replica la logica de GB_CMP_PROMOTION_RETROFIT_MERITO:
+  ventana de 5 meses previa a la fecha fin del plan, recorrido del
+  historial de assignments comparando manager level actual vs previo.
+  Solo se marca PRO cuando hay incremento real de nivel ascendente
+  dentro de la ventana.
 ============================================================================*/
-L_CINCO_MESES = ADD_MONTHS(L_PL_END_DATE, -5)
+PROMOTION_START_DATE = ADD_MONTHS(L_PL_END_DATE, -5)
+PROMOTION_END_DATE   = HR_EXTRACT_DATE
+
+l_log = SET_LOG('Promotion Start Date: ' || TO_CHAR(PROMOTION_START_DATE, 'YYYY/MM/DD'))
+l_log = SET_LOG('Promotion End Date: '   || TO_CHAR(PROMOTION_END_DATE,   'YYYY/MM/DD'))
+
+LEVEL1       = 'NA'
+PRIOR_LEVEL  = 'NA'
+LEVEL_CHANGE = 'N'
+PRO          = 'N'
+L_COUNT      = 0
+
+IF ASSIGN_START_DATE >= PROMOTION_START_DATE AND ASSIGN_START_DATE <= PROMOTION_END_DATE THEN
+(
+    WHILE L_COUNT <= 10 LOOP
+    (
+        L_COUNT = L_COUNT + 1
+        PRIOR_ASSIGN_START_DATE = ADD_DAYS(ASSIGN_START_DATE, -1)
+
+        IF ASSIGN_END_DATE > PROMOTION_START_DATE THEN
+        (
+            CHANGE_CONTEXTS(EFFECTIVE_DATE = PRIOR_ASSIGN_START_DATE)
+            (
+                PRIOR_ASSIGN_START_DATE = PER_ASG_EFFECTIVE_START_DATE
+                PRIOR_ASSIGN_END_DATE   = PER_ASG_EFFECTIVE_END_DATE
+                PRIOR_LEVEL             = PER_ASG_JOB_MANAGER_LEVEL
+
+                IF PRIOR_LEVEL != 'NA' AND PRIOR_LEVEL = MGR_LVL THEN
+                (
+                    ASSIGN_START_DATE = PRIOR_ASSIGN_START_DATE
+                )
+                ELSE
+                (
+                    IF PRIOR_ASSIGN_END_DATE < PROMOTION_START_DATE THEN
+                    (
+                        ASSIGN_START_DATE = PRIOR_ASSIGN_START_DATE
+                    )
+                    ELSE
+                    (
+                        LEVEL1  = PRIOR_LEVEL
+                        L_COUNT = 11
+                    )
+                )
+            )
+        )
+    )
+)
+
+IF LEVEL1 != 'NA' AND MGR_LVL != 'NA' THEN
+(
+    IF TO_NUMBER(MGR_LVL) > TO_NUMBER(LEVEL1) THEN
+        LEVEL_CHANGE = 'Y'
+)
+
+IF LEVEL_CHANGE = 'Y' THEN
+    PRO = 'PRO'
+
+l_log = SET_LOG('Level previo (LEVEL1): ' || LEVEL1)
+l_log = SET_LOG('Level change: '          || LEVEL_CHANGE)
+l_log = SET_LOG('PRO flag: '              || PRO)
 
 /*============================================================================
   CONDICION
   Se determina la condicion del empleado en orden de prioridad:
-  Promotion, NewHire, NonPerm o None
+  Promotion (solo si PRO = 'PRO'), NewHire, NonPerm o None
 ============================================================================*/
-IF L_ACTION = 'PROMOTION' THEN
+L_CINCO_MESES = ADD_MONTHS(L_PL_END_DATE, -5)
+
+IF PRO = 'PRO' THEN
     L_CONDICION = 'Promotion'
 ELSE IF L_HIRE_DATE >= L_CINCO_MESES AND (L_ACTION = 'HIRE' OR L_ACTION = 'ADD_ASSIGN') THEN
     L_CONDICION = 'NewHire'
@@ -179,8 +251,8 @@ ELSE IF L_EVAL_TXT = 'N/A' THEN
     L_CLAVE = 'SinEval'
 ELSE IF L_EVAL_TXT = 'Salida' THEN
     L_CLAVE = 'Salida'
-ELSE IF L_EVAL_TXT = 'Necesita mejora' THEN
-    L_CLAVE = 'Necesita mejora'
+ELSE IF L_EVAL_TXT = 'Necesita Mejora' THEN
+    L_CLAVE = 'Necesita Mejora'
 ELSE IF L_EVAL_TXT = 'Por debajo de lo esperado' THEN
     L_CLAVE = 'Por debajo de lo esperado'
 ELSE IF L_APERTURA <= 100 THEN
@@ -268,6 +340,9 @@ ELSE IF L_RANGO_MAX = 'MITAD' THEN
     L_DEFAULT_MAX = L_PROM / 2
 ELSE
     L_DEFAULT_MAX = 0
+
+
+
 
 /*============================================================================
   APLICAR INFLACION MINIMA

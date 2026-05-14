@@ -12,7 +12,7 @@
 * Author          | Date            | Ver | Comments                          *
 *-----------------+-----------------+-----+-----------------------------------*
 * IT Global       | 15-Abril-2026   |  1  | Version Inicial                   *
-* IT Global       | 08-Mayo-2026   |  2  | Reestructura dinamica UDT         *
+* IT Global       | 21-Abril-2026   |  2  | Reestructura dinamica UDT         *
 ******************************************************************************/
 
 INPUTS ARE CMP_IV_PLAN_START_DATE (text),
